@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bioloid-gp-sim"
+version = "0.1.0"
+description = "MuJoCo and Gymnasium environment for an 18-DOF Bioloid GP humanoid"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+  "gymnasium>=1.0,<2",
+  "mujoco>=3.2,<4",
+  "numpy>=1.26,<3",
+]
+
+[project.optional-dependencies]
+train = [
+  "stable-baselines3>=2.5,<3",
+  "tensorboard>=2.18,<3",
+]
+test = ["pytest>=8,<9"]
+
+[project.scripts]
+bioloid-view = "bioloid_sim.viewer:main"
+bioloid-train = "bioloid_sim.train:main"
+bioloid-eval = "bioloid_sim.evaluate:main"
+
+[tool.setuptools.package-data]
+bioloid_sim = ["models/*.xml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
