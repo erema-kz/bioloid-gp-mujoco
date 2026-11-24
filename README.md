@@ -6,6 +6,17 @@ The exact model is generated only from
 `C:\Users\IoT\Desktop\BioloidGP_Step`: all 63 CAD solids are assigned to 17
 rigid links around the 16 AX-12 horn frames preserved in the STEP assembly.
 
+## Trained walking demo
+
+The exact STEP-derived robot walks to the 0.5 m goal using the included PPO
+policy. This GIF is rendered directly from a deterministic MuJoCo evaluation.
+
+![Bioloid GP walking 0.5 metres in MuJoCo](docs/assets/bioloid_walk.gif)
+
+| Start | Mid-step | Goal reached |
+| --- | --- | --- |
+| ![Start pose](docs/assets/bioloid_start.png) | ![Walking pose](docs/assets/bioloid_mid_step.png) | ![Goal pose](docs/assets/bioloid_goal.png) |
+
 ## What works
 
 - exact free-floating humanoid with 3 joints per arm and 5 joints per leg;
@@ -96,6 +107,13 @@ Verify it headlessly over 20 episodes:
 ```powershell
 .\.venv\Scripts\bioloid-eval.exe runs\bioloid_exact_walk_0p5m_v2.zip `
   --model exact --task walk --goal-distance 0.5 --headless --episodes 20
+```
+
+Regenerate the GIF and screenshots from the trained policy:
+
+```powershell
+.\.venv\Scripts\python.exe tools\render_policy_media.py `
+  runs\bioloid_exact_walk_0p5m_v2.zip --output-dir docs\assets
 ```
 
 The repository already contains the generated link meshes, so another computer

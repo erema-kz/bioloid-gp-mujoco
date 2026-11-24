@@ -20,6 +20,7 @@ train = [
   "tensorboard>=2.18,<3",
 ]
 test = ["pytest>=8,<9"]
+media = ["pillow>=10,<14"]
 
 [project.scripts]
 bioloid-view = "bioloid_sim.viewer:main"

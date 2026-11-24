@@ -33,7 +33,7 @@
   <worldbody>
     <light pos="1 -1 2" dir="-1 1 -2" diffuse="0.9 0.9 0.9" />
     <geom name="floor" type="plane" size="4 4 0.1" material="floor" contype="1" conaffinity="2" />
-    <camera name="tracking" mode="trackcom" pos="0.48 -0.58 0.34" xyaxes="0.75 0.66 0 -0.25 0.29 0.92" />
+    <camera name="tracking" mode="trackcom" pos="0.57 -0.68 0.39" xyaxes="0.75 0.66 0 -0.25 0.29 0.92" />
     <body name="base" pos="0 0 0.295034" quat="0.707106781 0.707106781 0 0">
       <inertial pos="-0.000198970396 -0.0343586775 -0.023281867" mass="0.753669854" diaginertia="0.00168761684 0.00124033269 0.00193967607" />
       <freejoint name="root" />

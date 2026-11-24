@@ -83,7 +83,7 @@ def main() -> None:
     world = ET.SubElement(root, "worldbody")
     ET.SubElement(world, "light", {"pos": "1 -1 2", "dir": "-1 1 -2", "diffuse": "0.9 0.9 0.9"})
     ET.SubElement(world, "geom", {"name": "floor", "type": "plane", "size": "4 4 0.1", "material": "floor", "contype": "1", "conaffinity": "2"})
-    ET.SubElement(world, "camera", {"name": "tracking", "mode": "trackcom", "pos": "0.48 -0.58 0.34", "xyaxes": "0.75 0.66 0 -0.25 0.29 0.92"})
+    ET.SubElement(world, "camera", {"name": "tracking", "mode": "trackcom", "pos": "0.57 -0.68 0.39", "xyaxes": "0.75 0.66 0 -0.25 0.29 0.92"})
 
     bodies = {}
 

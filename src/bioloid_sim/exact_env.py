@@ -176,9 +176,9 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
     def render(self):
         if self.render_mode == "human":
             if self._viewer is None:
-                import mujoco.viewer
+                from mujoco import viewer as mujoco_viewer
 
-                self._viewer = mujoco.viewer.launch_passive(self.model, self.data)
+                self._viewer = mujoco_viewer.launch_passive(self.model, self.data)
             if self._last_render_time is None:
                 self._last_render_time = time.perf_counter()
             target_time = self._last_render_time + self.control_dt
