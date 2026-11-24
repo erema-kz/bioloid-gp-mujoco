@@ -2,4 +2,7 @@
 .pytest_cache/
 __pycache__/
 *.egg-info/
-runs/
+runs/*
+!runs/bioloid_exact_walk_0p5m_v2.zip
+generated/
+MUJOCO_LOG.TXT

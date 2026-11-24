@@ -1,18 +1,24 @@
 # Bioloid GP MuJoCo simulator
 
-An 18-DOF Bioloid-style humanoid for learning balance and locomotion with
-MuJoCo, Gymnasium, and PPO. The first model intentionally uses primitive
-collision geometry: it is fast and stable enough for reinforcement learning.
-The supplied `BioloidGP.stp` assembly is the visual-geometry reference; it is
-not copied into this repository.
+A MuJoCo, Gymnasium, and PPO project containing two models: the user's exact
+16-DOF `BioloidGP.stp` assembly and an older simplified 18-DOF learning model.
+The exact model is generated only from
+`C:\Users\IoT\Desktop\BioloidGP_Step`: all 63 CAD solids are assigned to 17
+rigid links around the 16 AX-12 horn frames preserved in the STEP assembly.
 
 ## What works
 
-- free-floating humanoid with 3 joints per arm and 6 joints per leg;
+- exact free-floating humanoid with 3 joints per arm and 5 joints per leg;
+- exact CAD link meshes, 16 servo axes, 1.99 kg estimated mass, and contact masks;
 - joint, velocity, and actuator-force limits;
 - a neutral standing controller and interactive MuJoCo viewer;
 - a Gymnasium environment with randomized resets and a forward-walking reward;
 - PPO training and checkpoint evaluation through Stable-Baselines3.
+
+The included `runs/bioloid_exact_walk_0p5m_v2.zip` policy was trained for
+about 1.62 million cumulative simulation steps. In a 20-episode deterministic
+evaluation it reached the 0.5 m goal in 20/20 episodes, averaged 0.502 m and
+0.187 m/s, and produced no MuJoCo solver warnings.
 
 This is a simulation baseline, not yet a calibrated digital twin. Before a
 policy is sent to hardware, actuator latency, backlash, real masses, IMU noise,
@@ -33,22 +39,80 @@ Open the model with its neutral pose controller:
 .\.venv\Scripts\bioloid-view.exe
 ```
 
-Run a short validation training:
+Run the articulated exact 16-DOF model:
 
 ```powershell
-.\.venv\Scripts\bioloid-train.exe --steps 100000 --envs 4
+.\.venv\Scripts\bioloid-view.exe --exact
 ```
 
-Evaluate the saved policy:
+Open the monolithic static CAD assembly exported directly from `BioloidGP.stp`:
 
 ```powershell
-.\.venv\Scripts\bioloid-eval.exe runs\bioloid_ppo.zip
+.\.venv\Scripts\bioloid-view.exe --cad
+```
+
+Regenerate the exact mesh from the original STEP folder:
+
+```powershell
+& 'C:\Program Files\FreeCAD 1.1\bin\python.exe' tools\export_step_mesh.py `
+  'C:\Users\IoT\Desktop\BioloidGP_Step\BioloidGP.stp' `
+  src\bioloid_sim\models\bioloid_gp_exact.stl
+```
+
+The exact model uses 17 link meshes, 16 servo axes, CAD-derived masses and
+inertias, mesh collision hulls, and position actuators. The static CAD preview
+keeps all 63 original solids in one visual body for geometry comparison.
+
+Train balance on the exact STEP model:
+
+```powershell
+.\.venv\Scripts\bioloid-train.exe --model exact --task balance `
+  --steps 100000 --envs 8 --output runs\bioloid_exact_balance
+```
+
+Evaluate the exact balance policy:
+
+```powershell
+.\.venv\Scripts\bioloid-eval.exe runs\bioloid_exact_balance.zip `
+  --model exact --task balance
 ```
 
 For a repeatable evaluation without a window:
 
 ```powershell
-.\.venv\Scripts\bioloid-eval.exe runs\bioloid_ppo.zip --headless --episodes 10
+.\.venv\Scripts\bioloid-eval.exe runs\bioloid_exact_balance.zip `
+  --model exact --task balance --headless --episodes 10
+```
+
+Run the included 0.5 m walking policy in real time:
+
+```powershell
+.\.venv\Scripts\bioloid-eval.exe runs\bioloid_exact_walk_0p5m_v2.zip `
+  --model exact --task walk --goal-distance 0.5
+```
+
+Verify it headlessly over 20 episodes:
+
+```powershell
+.\.venv\Scripts\bioloid-eval.exe runs\bioloid_exact_walk_0p5m_v2.zip `
+  --model exact --task walk --goal-distance 0.5 --headless --episodes 20
+```
+
+The repository already contains the generated link meshes, so another computer
+does not need FreeCAD or the original STEP file to run the simulator. Python
+3.11 and the installation command above are sufficient. FreeCAD is needed only
+to regenerate meshes after editing the STEP assembly.
+
+Rebuild the articulated model after changing the STEP assembly:
+
+```powershell
+& 'C:\Program Files\FreeCAD 1.1\bin\python.exe' tools\export_exact_robot_links.py `
+  'C:\Users\IoT\Desktop\BioloidGP_Step\BioloidGP.stp' `
+  src\bioloid_sim\models\step_links
+
+.\.venv\Scripts\python.exe tools\build_step_mjcf.py `
+  src\bioloid_sim\models\step_links\manifest.json `
+  src\bioloid_sim\models\bioloid_gp_step_16dof.xml
 ```
 
 Training begins with standing and low forward-speed commands. A useful walking
@@ -61,20 +125,19 @@ Action values are normalized to `[-1, 1]` and mapped to safe position targets.
 The observation contains torso orientation, base velocity, joint offsets from
 the home pose, joint velocity, and the commanded forward speed.
 
-Joint order:
+Exact-model joint order:
 
 ```text
-r_shoulder_pitch, r_shoulder_roll, r_elbow,
-l_shoulder_pitch, l_shoulder_roll, l_elbow,
-r_hip_yaw, r_hip_roll, r_hip_pitch, r_knee, r_ankle_pitch, r_ankle_roll,
-l_hip_yaw, l_hip_roll, l_hip_pitch, l_knee, l_ankle_pitch, l_ankle_roll
+right_arm_1, right_arm_2, right_arm_3,
+left_arm_1, left_arm_2, left_arm_3,
+right_leg_1, right_leg_2, right_leg_3, right_leg_4, right_leg_5,
+left_leg_1, left_leg_2, left_leg_3, left_leg_4, left_leg_5
 ```
 
 ## Sources and limitations
 
-Kinematic dimensions and joint naming were cross-checked against the Apache-2.0
-[`verlab/bioloid_common`](https://github.com/verlab/bioloid_common) model. The
-alternative ROS/Gazebo assembly in
-[`fryumbla/ros-bioloid-gp`](https://github.com/fryumbla/ros-bioloid-gp) was used
-to compare link masses and the SolidWorks-exported geometry. Both upstream
-checkouts are kept under `_sources/community/` and are not imported at runtime.
+The exact model does not import visual geometry from external robot projects.
+The older simplified model remains available for experiments, but `--exact`
+always selects meshes generated from the user's STEP directory. Link mass is
+currently estimated from CAD volume at a uniform 1850 kg/m³; measured link
+masses and AX-12 actuator calibration are still required before sim-to-real.

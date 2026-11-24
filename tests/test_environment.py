@@ -1,7 +1,8 @@
 import numpy as np
 import mujoco
+from importlib.resources import files
 
-from bioloid_sim import BioloidGPEnv
+from bioloid_sim import BioloidGPEnv, ExactBioloidGPEnv
 
 
 def test_model_dimensions_and_finite_rollout():
@@ -41,4 +42,57 @@ def test_home_controller_holds_robot_upright():
     upright = env.data.xmat[env.torso_id, 8]
     assert height > 0.19
     assert upright > 0.85
+    env.close()
+
+
+def test_exact_cad_preview_loads():
+    path = files("bioloid_sim").joinpath("models/bioloid_gp_exact.xml")
+    model = mujoco.MjModel.from_xml_path(str(path))
+    assert model.nmesh == 1
+    assert model.nbody == 2
+
+
+def test_exact_16dof_model_holds_its_cad_pose():
+    path = files("bioloid_sim").joinpath("models/bioloid_gp_step_16dof.xml")
+    model = mujoco.MjModel.from_xml_path(str(path))
+    data = mujoco.MjData(model)
+    mujoco.mj_resetDataKeyframe(model, data, 0)
+    data.ctrl[:] = model.key_ctrl[0]
+    mujoco.mj_step(model, data, 1_000)
+
+    assert model.nu == 16
+    assert np.isfinite(data.qpos).all()
+    assert data.qpos[2] > 0.29
+    assert np.linalg.norm(data.qpos[:2]) < 0.01
+
+
+def test_exact_environment_has_16_actions_and_finite_rollout():
+    env = ExactBioloidGPEnv()
+    observation, info = env.reset(seed=123)
+    assert observation.shape == (43,)
+    assert env.action_space.shape == (16,)
+    assert info["command_speed"] == 0.0
+
+    for _ in range(50):
+        observation, reward, terminated, truncated, _ = env.step(np.zeros(16))
+        assert np.isfinite(observation).all()
+        assert np.isfinite(reward)
+        if terminated or truncated:
+            observation, _ = env.reset(seed=123)
+    env.close()
+
+
+def test_exact_environment_random_controls_do_not_destabilize_solver():
+    env = ExactBioloidGPEnv(task="walk", goal_distance=0.5)
+    observation, _ = env.reset(seed=321)
+    rng = np.random.default_rng(321)
+    for _ in range(250):
+        action = rng.uniform(-0.5, 0.5, 16)
+        observation, reward, terminated, truncated, info = env.step(action)
+        assert np.isfinite(observation).all()
+        assert np.isfinite(reward)
+        assert not info["unstable"]
+        assert info["goal_distance"] == 0.5
+        if terminated or truncated:
+            observation, _ = env.reset(seed=321)
     env.close()

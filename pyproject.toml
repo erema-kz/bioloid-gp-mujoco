@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bioloid-gp-sim"
 version = "0.1.0"
-description = "MuJoCo and Gymnasium environment for an 18-DOF Bioloid GP humanoid"
+description = "MuJoCo and Gymnasium environments for exact 16-DOF and simplified 18-DOF Bioloid GP models"
 readme = "README.md"
 requires-python = ">=3.11,<3.13"
 dependencies = [
@@ -27,7 +27,7 @@ bioloid-train = "bioloid_sim.train:main"
 bioloid-eval = "bioloid_sim.evaluate:main"
 
 [tool.setuptools.package-data]
-bioloid_sim = ["models/*.xml"]
+bioloid_sim = ["models/*.xml", "models/*.stl", "models/*.urdf", "models/step_links/*.stl", "models/step_links/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
