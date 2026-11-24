@@ -21,6 +21,7 @@ policy. This GIF is rendered directly from a deterministic MuJoCo evaluation.
 
 - exact free-floating humanoid with 3 joints per arm and 5 joints per leg;
 - exact CAD link meshes, 16 servo axes, 1.99 kg estimated mass, and contact masks;
+- floor collision plus self-collision between non-adjacent robot links;
 - joint, velocity, and actuator-force limits;
 - a neutral standing controller and interactive MuJoCo viewer;
 - a Gymnasium environment with randomized resets and a forward-walking reward;
@@ -101,6 +102,29 @@ Run the included 0.5 m walking policy in real time:
 .\.venv\Scripts\bioloid-eval.exe runs\bioloid_exact_walk_0p5m_v2.zip `
   --model exact --task walk --goal-distance 0.5
 ```
+
+Run the hybrid recovery controller. It executes a collision-safe get-up
+trajectory and then switches back to the trained walking policy:
+
+```powershell
+.\.venv\Scripts\python.exe -m bioloid_sim.hybrid `
+  runs\bioloid_exact_walk_0p5m_v2.zip runs\getup_trajectories.json `
+  --episode-seconds 120 --goal-distance 100
+```
+
+For a visible get-up test that starts after a backward fall:
+
+```powershell
+.\.venv\Scripts\python.exe -m bioloid_sim.hybrid `
+  runs\bioloid_exact_walk_0p5m_v2.zip runs\getup_trajectories.json `
+  --start-fallen --fall-direction back
+```
+
+In 20 deterministic tests with exact mesh self-collision enabled, the current
+controller entered a walk-ready pose in 90% of forward falls and 100% of
+backward and left-side falls. Right-side recovery is not solved yet and remains
+an explicit limitation rather than allowing CAD links to pass through each
+other.
 
 Verify it headlessly over 20 episodes:
 

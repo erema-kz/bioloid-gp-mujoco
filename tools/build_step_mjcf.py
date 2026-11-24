@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from itertools import combinations
 import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -132,12 +133,32 @@ def main() -> None:
         ET.SubElement(
             body,
             "geom",
-            {"name": f"{link_name}_collision", "type": "mesh", "mesh": f"mesh_{link_name}", "rgba": "0 0 0 0", "group": "3", "density": "0", "contype": "2", "conaffinity": "1"},
+            {"name": f"{link_name}_collision", "type": "mesh", "mesh": f"mesh_{link_name}", "rgba": "0 0 0 0", "group": "3", "density": "0", "contype": "2", "conaffinity": "3"},
         )
         for child_name in children[link_name]:
             add_link(child_name, body)
 
     add_link("base", world)
+
+    def body_distance(first: str, second: str) -> int:
+        first_ancestors: dict[str, int] = {}
+        name: str | None = first
+        distance = 0
+        while name is not None:
+            first_ancestors[name] = distance
+            name = links[name]["parent"]
+            distance += 1
+        name = second
+        distance = 0
+        while name not in first_ancestors:
+            name = links[name]["parent"]
+            distance += 1
+        return distance + first_ancestors[name]
+
+    contact = ET.SubElement(root, "contact")
+    for first, second in combinations(links, 2):
+        if body_distance(first, second) <= 2:
+            ET.SubElement(contact, "exclude", {"body1": first, "body2": second})
 
     actuator = ET.SubElement(root, "actuator")
     ordered_joints = []

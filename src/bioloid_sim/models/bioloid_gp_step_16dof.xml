@@ -39,22 +39,22 @@
       <freejoint name="root" />
       <site name="imu" size="0.004" rgba="0 1 0 1" />
       <geom name="base_visual" type="mesh" mesh="mesh_base" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-      <geom name="base_collision" type="mesh" mesh="mesh_base" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+      <geom name="base_collision" type="mesh" mesh="mesh_base" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
       <body name="right_arm_1" pos="0.0541 0.0003 0.0038" quat="0.5 0.5 0.5 0.5">
         <inertial pos="-0.00675606699 0.00398208169 0.0116910972" mass="0.0139614535" diaginertia="4.3019691e-06 3.9982396e-06 4.40826104e-06" />
         <joint name="right_arm_1_joint" axis="0 0 1" range="-1.5 1.5" />
         <geom name="right_arm_1_visual" type="mesh" mesh="mesh_right_arm_1" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-        <geom name="right_arm_1_collision" type="mesh" mesh="mesh_right_arm_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+        <geom name="right_arm_1_collision" type="mesh" mesh="mesh_right_arm_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
         <body name="right_arm_2" pos="-0.018 0.019 0.025" quat="0.5 -0.5 -0.5 -0.5">
           <inertial pos="6.29672919e-05 -0.0370411681 -0.0150790675" mass="0.173724507" diaginertia="0.000199236819 8.40718035e-05 0.000173797037" />
           <joint name="right_arm_2_joint" axis="0 0 1" range="-1.3 1.3" />
           <geom name="right_arm_2_visual" type="mesh" mesh="mesh_right_arm_2" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-          <geom name="right_arm_2_collision" type="mesh" mesh="mesh_right_arm_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+          <geom name="right_arm_2_collision" type="mesh" mesh="mesh_right_arm_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
           <body name="right_arm_3" pos="0.0186 -0.0574 -0.0011" quat="0.5 0.5 0.5 0.5">
             <inertial pos="-0.0153838176 0.0549457753 -0.0104367965" mass="0.0205184508" diaginertia="2.87968757e-05 5.63870765e-06 3.07114845e-05" />
             <joint name="right_arm_3_joint" axis="0 0 1" range="-1.8 1.8" />
             <geom name="right_arm_3_visual" type="mesh" mesh="mesh_right_arm_3" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-            <geom name="right_arm_3_collision" type="mesh" mesh="mesh_right_arm_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+            <geom name="right_arm_3_collision" type="mesh" mesh="mesh_right_arm_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
           </body>
         </body>
       </body>
@@ -62,17 +62,17 @@
         <inertial pos="0.00675435063 0.00398208129 0.0116928136" mass="0.0139614535" diaginertia="4.30223352e-06 3.99850402e-06 4.40826104e-06" />
         <joint name="left_arm_1_joint" axis="0 0 1" range="-1.5 1.5" />
         <geom name="left_arm_1_visual" type="mesh" mesh="mesh_left_arm_1" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-        <geom name="left_arm_1_collision" type="mesh" mesh="mesh_left_arm_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+        <geom name="left_arm_1_collision" type="mesh" mesh="mesh_left_arm_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
         <body name="left_arm_2" pos="0.018 0.019 0.025" quat="0.5 -0.5 0.5 0.5">
           <inertial pos="-6.29676366e-05 -0.0370411681 -0.0150790675" mass="0.173724507" diaginertia="0.000199236819 8.40718035e-05 0.000173797037" />
           <joint name="left_arm_2_joint" axis="0 0 1" range="-1.3 1.3" />
           <geom name="left_arm_2_visual" type="mesh" mesh="mesh_left_arm_2" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-          <geom name="left_arm_2_collision" type="mesh" mesh="mesh_left_arm_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+          <geom name="left_arm_2_collision" type="mesh" mesh="mesh_left_arm_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
           <body name="left_arm_3" pos="-0.0186 -0.0574 -0.0011" quat="0.5 0.5 -0.5 -0.5">
             <inertial pos="0.0153826498 0.0549457753 -0.0104367965" mass="0.0205184508" diaginertia="2.87968757e-05 5.63915422e-06 3.07119311e-05" />
             <joint name="left_arm_3_joint" axis="0 0 1" range="-1.8 1.8" />
             <geom name="left_arm_3_visual" type="mesh" mesh="mesh_left_arm_3" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-            <geom name="left_arm_3_collision" type="mesh" mesh="mesh_left_arm_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+            <geom name="left_arm_3_collision" type="mesh" mesh="mesh_left_arm_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
           </body>
         </body>
       </body>
@@ -80,27 +80,27 @@
         <inertial pos="-0.0225880961 -0.00691055752 -0.0148486059" mass="0.0144991724" diaginertia="4.33281889e-06 6.6716679e-06 7.49662951e-06" />
         <joint name="right_leg_1_joint" axis="0 0 1" range="-0.8 0.8" />
         <geom name="right_leg_1_visual" type="mesh" mesh="mesh_right_leg_1" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-        <geom name="right_leg_1_collision" type="mesh" mesh="mesh_right_leg_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+        <geom name="right_leg_1_collision" type="mesh" mesh="mesh_right_leg_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
         <body name="right_leg_2" pos="-0.0418 0.0063 -0.0186" quat="0.612372436 -0.612372436 -0.353553391 -0.353553391">
           <inertial pos="-0.000766322941 -0.0438795205 -0.018432277" mass="0.168578637" diaginertia="0.000166156865 5.54061788e-05 0.000180991785" />
           <joint name="right_leg_2_joint" axis="0 0 1" range="-1.2 1.2" />
           <geom name="right_leg_2_visual" type="mesh" mesh="mesh_right_leg_2" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-          <geom name="right_leg_2_collision" type="mesh" mesh="mesh_right_leg_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+          <geom name="right_leg_2_collision" type="mesh" mesh="mesh_right_leg_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
           <body name="right_leg_3" pos="-0.0156 -0.0744 5.86197757e-17" quat="-0.707106781 1.19348975e-15 -9.43689571e-16 -0.707106781">
             <inertial pos="-0.0289199995 0.0237788042 -0.0136008563" mass="0.0205942442" diaginertia="1.43764564e-05 1.23854118e-05 1.98113108e-05" />
             <joint name="right_leg_3_joint" axis="0 0 1" range="-1.5 1.5" />
             <geom name="right_leg_3_visual" type="mesh" mesh="mesh_right_leg_3" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-            <geom name="right_leg_3_collision" type="mesh" mesh="mesh_right_leg_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+            <geom name="right_leg_3_collision" type="mesh" mesh="mesh_right_leg_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
             <body name="right_leg_4" pos="-0.0500573684 0.0577019053 -7.56728014e-16" quat="0.866025404 -6.63184147e-16 -2.22044605e-16 0.5">
               <inertial pos="0.0215359928 -0.0133301893 -0.0184163243" mass="0.164398164" diaginertia="5.4444425e-05 0.000103774834 0.000118654101" />
               <joint name="right_leg_4_joint" axis="0 0 1" range="-1.2 1.2" />
               <geom name="right_leg_4_visual" type="mesh" mesh="mesh_right_leg_4" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-              <geom name="right_leg_4_collision" type="mesh" mesh="mesh_right_leg_4" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+              <geom name="right_leg_4_collision" type="mesh" mesh="mesh_right_leg_4" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
               <body name="right_leg_5" pos="0.0247 0.0003 -0.0184" quat="-0.707106781 -7.87914944e-16 0.707106781 3.16882833e-16">
                 <inertial pos="-0.0031423809 0.0189982929 0.0271822674" mass="0.043130954" diaginertia="4.63298331e-05 4.71924522e-05 2.58857609e-05" />
                 <joint name="right_leg_5_joint" axis="0 0 1" range="-0.8 0.8" />
                 <geom name="right_leg_5_visual" type="mesh" mesh="mesh_right_leg_5" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-                <geom name="right_leg_5_collision" type="mesh" mesh="mesh_right_leg_5" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+                <geom name="right_leg_5_collision" type="mesh" mesh="mesh_right_leg_5" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
               </body>
             </body>
           </body>
@@ -110,27 +110,27 @@
         <inertial pos="0.0225856171 -0.00691055752 -0.0148471746" mass="0.0144991724" diaginertia="4.33281889e-06 6.67209626e-06 7.49705787e-06" />
         <joint name="left_leg_1_joint" axis="0 0 1" range="-0.8 0.8" />
         <geom name="left_leg_1_visual" type="mesh" mesh="mesh_left_leg_1" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-        <geom name="left_leg_1_collision" type="mesh" mesh="mesh_left_leg_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+        <geom name="left_leg_1_collision" type="mesh" mesh="mesh_left_leg_1" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
         <body name="left_leg_2" pos="0.0418 0.0063 -0.0186" quat="0.612372436 -0.612372436 0.353553391 0.353553391">
           <inertial pos="0.000766322941 -0.0438795205 -0.018432277" mass="0.168578637" diaginertia="0.000166156865 5.54061788e-05 0.000180991785" />
           <joint name="left_leg_2_joint" axis="0 0 1" range="-1.2 1.2" />
           <geom name="left_leg_2_visual" type="mesh" mesh="mesh_left_leg_2" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-          <geom name="left_leg_2_collision" type="mesh" mesh="mesh_left_leg_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+          <geom name="left_leg_2_collision" type="mesh" mesh="mesh_left_leg_2" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
           <body name="left_leg_3" pos="0.0156 -0.0744 1.57385216e-15" quat="-0.707106781 -9.15933995e-16 -1.27675648e-15 0.707106781">
             <inertial pos="0.0289182542 0.0237798119 -0.0136008563" mass="0.0205942442" diaginertia="1.43769631e-05 1.23858699e-05 1.98122756e-05" />
             <joint name="left_leg_3_joint" axis="0 0 1" range="-1.5 1.5" />
             <geom name="left_leg_3_visual" type="mesh" mesh="mesh_left_leg_3" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-            <geom name="left_leg_3_collision" type="mesh" mesh="mesh_left_leg_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+            <geom name="left_leg_3_collision" type="mesh" mesh="mesh_left_leg_3" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
             <body name="left_leg_4" pos="0.0500573684 0.0577019053 1.11022302e-15" quat="0.866025404 2.02441329e-15 -4.5519144e-15 -0.5">
               <inertial pos="-0.0215359928 -0.0133301893 -0.0184163243" mass="0.164398164" diaginertia="5.4444425e-05 0.000103774834 0.000118654101" />
               <joint name="left_leg_4_joint" axis="0 0 1" range="-1.2 1.2" />
               <geom name="left_leg_4_visual" type="mesh" mesh="mesh_left_leg_4" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-              <geom name="left_leg_4_collision" type="mesh" mesh="mesh_left_leg_4" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+              <geom name="left_leg_4_collision" type="mesh" mesh="mesh_left_leg_4" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
               <body name="left_leg_5" pos="-0.0247 0.0003 -0.0184" quat="0.707106781 -1.59288636e-15 0.707106781 -1.59288636e-15">
                 <inertial pos="0.00314182533 0.0189982929 0.0271822674" mass="0.043130954" diaginertia="4.63298331e-05 4.71924522e-05 2.58857609e-05" />
                 <joint name="left_leg_5_joint" axis="0 0 1" range="-0.8 0.8" />
                 <geom name="left_leg_5_visual" type="mesh" mesh="mesh_left_leg_5" material="cad" contype="0" conaffinity="0" group="2" density="0" />
-                <geom name="left_leg_5_collision" type="mesh" mesh="mesh_left_leg_5" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="1" />
+                <geom name="left_leg_5_collision" type="mesh" mesh="mesh_left_leg_5" rgba="0 0 0 0" group="3" density="0" contype="2" conaffinity="3" />
               </body>
             </body>
           </body>
@@ -138,6 +138,42 @@
       </body>
     </body>
   </worldbody>
+  <contact>
+    <exclude body1="base" body2="right_arm_1" />
+    <exclude body1="base" body2="right_arm_2" />
+    <exclude body1="base" body2="left_arm_1" />
+    <exclude body1="base" body2="left_arm_2" />
+    <exclude body1="base" body2="right_leg_1" />
+    <exclude body1="base" body2="right_leg_2" />
+    <exclude body1="base" body2="left_leg_1" />
+    <exclude body1="base" body2="left_leg_2" />
+    <exclude body1="right_arm_1" body2="right_arm_2" />
+    <exclude body1="right_arm_1" body2="right_arm_3" />
+    <exclude body1="right_arm_1" body2="left_arm_1" />
+    <exclude body1="right_arm_1" body2="right_leg_1" />
+    <exclude body1="right_arm_1" body2="left_leg_1" />
+    <exclude body1="right_arm_2" body2="right_arm_3" />
+    <exclude body1="left_arm_1" body2="left_arm_2" />
+    <exclude body1="left_arm_1" body2="left_arm_3" />
+    <exclude body1="left_arm_1" body2="right_leg_1" />
+    <exclude body1="left_arm_1" body2="left_leg_1" />
+    <exclude body1="left_arm_2" body2="left_arm_3" />
+    <exclude body1="right_leg_1" body2="right_leg_2" />
+    <exclude body1="right_leg_1" body2="right_leg_3" />
+    <exclude body1="right_leg_1" body2="left_leg_1" />
+    <exclude body1="right_leg_2" body2="right_leg_3" />
+    <exclude body1="right_leg_2" body2="right_leg_4" />
+    <exclude body1="right_leg_3" body2="right_leg_4" />
+    <exclude body1="right_leg_3" body2="right_leg_5" />
+    <exclude body1="right_leg_4" body2="right_leg_5" />
+    <exclude body1="left_leg_1" body2="left_leg_2" />
+    <exclude body1="left_leg_1" body2="left_leg_3" />
+    <exclude body1="left_leg_2" body2="left_leg_3" />
+    <exclude body1="left_leg_2" body2="left_leg_4" />
+    <exclude body1="left_leg_3" body2="left_leg_4" />
+    <exclude body1="left_leg_3" body2="left_leg_5" />
+    <exclude body1="left_leg_4" body2="left_leg_5" />
+  </contact>
   <actuator>
     <position name="right_arm_1_act" joint="right_arm_1_joint" ctrlrange="-1.5 1.5" kp="8" kv="0.5" forcerange="-1.5 1.5" />
     <position name="right_arm_2_act" joint="right_arm_2_joint" ctrlrange="-1.3 1.3" kp="8" kv="0.5" forcerange="-1.5 1.5" />

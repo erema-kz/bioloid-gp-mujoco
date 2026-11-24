@@ -4,5 +4,6 @@ __pycache__/
 *.egg-info/
 runs/*
 !runs/bioloid_exact_walk_0p5m_v2.zip
+!runs/getup_trajectories.json
 generated/
 MUJOCO_LOG.TXT

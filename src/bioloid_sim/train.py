@@ -4,6 +4,7 @@ import argparse
 from pathlib import Path
 
 from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import CheckpointCallback
 from stable_baselines3.common.env_util import make_vec_env
 
 from bioloid_sim.env import BioloidGPEnv
@@ -21,6 +22,9 @@ def main() -> None:
     parser.add_argument("--model", choices=("approx", "exact"), default="approx")
     parser.add_argument("--task", choices=("balance", "walk"), default="balance")
     parser.add_argument("--goal-distance", type=float, default=0.5)
+    parser.add_argument("--recover", action="store_true", help="learn to get up after falling")
+    parser.add_argument("--fallen-reset-prob", type=float, default=0.35)
+    parser.add_argument("--checkpoint-every", type=int, default=250_000)
     parser.add_argument("--resume", type=Path, help="continue from an existing PPO checkpoint")
     args = parser.parse_args()
 
@@ -31,7 +35,12 @@ def main() -> None:
     args.output.parent.mkdir(parents=True, exist_ok=True)
     environment = ExactBioloidGPEnv if args.model == "exact" else BioloidGPEnv
     env_kwargs = (
-        {"task": args.task, "goal_distance": args.goal_distance}
+        {
+            "task": args.task,
+            "goal_distance": args.goal_distance,
+            "allow_recovery": args.recover,
+            "fallen_reset_probability": args.fallen_reset_prob if args.recover else 0.0,
+        }
         if args.model == "exact"
         else None
     )
@@ -66,10 +75,16 @@ def main() -> None:
             seed=args.seed,
             device="auto",
         )
+    checkpoint = CheckpointCallback(
+        save_freq=max(1, args.checkpoint_every // args.envs),
+        save_path=str(args.output.parent / f"{args.output.name}_checkpoints"),
+        name_prefix=args.output.name,
+    )
     model.learn(
         total_timesteps=args.steps,
         progress_bar=False,
         reset_num_timesteps=args.resume is None,
+        callback=checkpoint,
     )
     model.save(args.output)
     env.close()
