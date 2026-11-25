@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from copy import deepcopy
 from importlib.resources import files
+import json
 from pathlib import Path
 import math
 import time
@@ -11,6 +12,8 @@ import xml.etree.ElementTree as ET
 import mujoco
 import numpy as np
 from stable_baselines3 import PPO
+
+from bioloid_sim.hybrid import nearest_fall_direction, reference_fall_quaternions
 
 
 MODEL_PATH = files("bioloid_sim").joinpath("models/bioloid_gp_step_16dof.xml")
@@ -139,6 +142,11 @@ class RobotController:
         self.ctrl_half_range = 0.22 * (ranges[:, 1] - ranges[:, 0])
         self.filtered_action = np.zeros(16, dtype=np.float64)
         self.command_speed = 0.14 + 0.015 * (index % 3)
+        self.mode = "walk"
+        self.fallen_steps = 0
+        self.ready_steps = 0
+        self.trajectory_step = 0
+        self.direction = "front"
 
     def observation(self, data: mujoco.MjData) -> np.ndarray:
         return np.concatenate(
@@ -152,21 +160,73 @@ class RobotController:
         ).astype(np.float32)
 
     def apply_action(
-        self, model: mujoco.MjModel, data: mujoco.MjData, action: np.ndarray
+        self,
+        model: mujoco.MjModel,
+        data: mujoco.MjData,
+        action: np.ndarray,
+        recovery: bool = False,
     ) -> None:
         self.filtered_action = 0.82 * self.filtered_action + 0.18 * np.clip(
             action, -1.0, 1.0
         )
-        targets = self.ctrl_center + self.filtered_action * self.ctrl_half_range
         ranges = model.actuator_ctrlrange[self.actuators]
+        target_range = self.ctrl_half_range
+        if recovery:
+            upright = float(data.xmat[self.base_id, 7])
+            recovery_blend = 1.0 - float(np.clip(upright / 0.70, 0.0, 1.0))
+            target_range = (0.22 + 0.26 * recovery_blend) * (
+                ranges[:, 1] - ranges[:, 0]
+            )
+        targets = self.ctrl_center + self.filtered_action * target_range
         data.ctrl[self.actuators] = np.clip(targets, ranges[:, 0], ranges[:, 1])
 
+    def update_recovery_mode(
+        self,
+        data: mujoco.MjData,
+        references: dict[str, np.ndarray],
+        available_directions: set[str],
+    ) -> None:
+        height = float(data.xpos[self.base_id, 2])
+        upright = float(data.xmat[self.base_id, 7])
+        ready = height > 0.20 and upright > 0.48
+        fallen = height < 0.19 or upright < 0.35
+        if self.mode == "getup":
+            self.ready_steps = self.ready_steps + 1 if ready else 0
+            if self.ready_steps >= 5:
+                self.mode = "walk"
+                self.fallen_steps = 0
+        else:
+            self.fallen_steps = self.fallen_steps + 1 if fallen else 0
+            if self.fallen_steps >= 8:
+                self.mode = "getup"
+                self.direction = nearest_fall_direction(
+                    data.qpos[self.root_qpos + 3 : self.root_qpos + 7],
+                    references,
+                    available_directions,
+                )
+                self.trajectory_step = 0
+                self.ready_steps = 0
 
-def choose_settings() -> tuple[int, float] | None:
+    def recovery_action(
+        self, trajectories: dict[str, np.ndarray], steps_per_keyframe: int
+    ) -> np.ndarray:
+        keyframes = trajectories[self.direction]
+        phase = self.trajectory_step / steps_per_keyframe
+        low = min(int(phase), len(keyframes) - 1)
+        high = min(low + 1, len(keyframes) - 1)
+        blend = phase - int(phase)
+        action = (1.0 - blend) * keyframes[low] + blend * keyframes[high]
+        self.trajectory_step = (self.trajectory_step + 1) % (
+            len(keyframes) * steps_per_keyframe
+        )
+        return action
+
+
+def choose_settings() -> tuple[int, float, float, float, bool] | None:
     import tkinter as tk
     from tkinter import ttk
 
-    result: list[tuple[int, float]] = []
+    result: list[tuple[int, float, float, float, bool]] = []
     root = tk.Tk()
     root.title("Bioloid GP Arena")
     root.resizable(False, False)
@@ -174,6 +234,10 @@ def choose_settings() -> tuple[int, float] | None:
     frame.grid()
     robots = tk.IntVar(value=4)
     speed = tk.DoubleVar(value=1.0)
+    push_enabled = tk.BooleanVar(value=True)
+    push_interval = tk.DoubleVar(value=6.0)
+    push_force = tk.DoubleVar(value=35.0)
+    auto_recover = tk.BooleanVar(value=True)
     ttk.Label(frame, text="Количество роботов").grid(row=0, column=0, sticky="w")
     ttk.Spinbox(frame, from_=1, to=12, textvariable=robots, width=8).grid(
         row=0, column=1, padx=(12, 0)
@@ -196,12 +260,45 @@ def choose_settings() -> tuple[int, float] | None:
         length=280,
     ).grid(row=2, column=0, columnspan=2, pady=(6, 16))
 
+    ttk.Checkbutton(
+        frame, text="Случайные физические толчки", variable=push_enabled
+    ).grid(row=3, column=0, columnspan=2, sticky="w")
+    ttk.Label(frame, text="Интервал толчков, сек").grid(
+        row=4, column=0, sticky="w", pady=(10, 0)
+    )
+    ttk.Spinbox(
+        frame, from_=1.0, to=60.0, increment=0.5, textvariable=push_interval, width=8
+    ).grid(row=4, column=1, padx=(12, 0), pady=(10, 0))
+    ttk.Label(frame, text="Сила толчка, Н").grid(
+        row=5, column=0, sticky="w", pady=(10, 0)
+    )
+    ttk.Spinbox(
+        frame, from_=5.0, to=100.0, increment=5.0, textvariable=push_force, width=8
+    ).grid(row=5, column=1, padx=(12, 0), pady=(10, 0))
+    ttk.Checkbutton(
+        frame, text="Автоподъём после падения", variable=auto_recover
+    ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(12, 12))
+    ttk.Label(
+        frame,
+        text="Толчок действует 0.25 сек на случайного робота",
+        foreground="#666666",
+    ).grid(row=7, column=0, columnspan=2, sticky="w", pady=(0, 14))
+
     def start() -> None:
-        result.append((max(1, min(12, robots.get())), max(0.25, speed.get())))
+        interval = max(0.5, push_interval.get()) if push_enabled.get() else 0.0
+        result.append(
+            (
+                max(1, min(12, robots.get())),
+                max(0.25, speed.get()),
+                interval,
+                max(0.0, push_force.get()),
+                auto_recover.get(),
+            )
+        )
         root.destroy()
 
     ttk.Button(frame, text="Запустить", command=start).grid(
-        row=3, column=0, columnspan=2
+        row=8, column=0, columnspan=2
     )
     root.mainloop()
     return result[0] if result else None
@@ -213,6 +310,10 @@ def run_arena(
     speed: float,
     headless: bool = False,
     seconds: float = 0.0,
+    trajectories_path: Path = Path("runs/getup_trajectories.json"),
+    push_interval: float = 0.0,
+    push_force: float = 35.0,
+    auto_recover: bool = False,
 ) -> None:
     model = mujoco.MjModel.from_xml_string(build_arena_xml(robot_count))
     data = mujoco.MjData(model)
@@ -235,9 +336,29 @@ def run_arena(
         [-data.qpos[controller.root_qpos + 1] for controller in controllers]
     )
     policy = PPO.load(checkpoint)
+    trajectories: dict[str, np.ndarray] = {}
+    steps_per_keyframe = 1
+    references: dict[str, np.ndarray] = {}
+    if auto_recover:
+        trajectory_data = json.loads(trajectories_path.read_text(encoding="utf-8"))
+        steps_per_keyframe = int(trajectory_data["steps_per_keyframe"])
+        trajectories = {
+            name: np.asarray(value["keyframes"], dtype=np.float64)
+            for name, value in trajectory_data["directions"].items()
+        }
+        if not trajectories:
+            raise ValueError("The trajectory file contains no directions")
+        references = reference_fall_quaternions(
+            np.asarray((0.707106781, 0.707106781, 0.0, 0.0))
+        )
     control_dt = 0.02
     frame_skip = round(control_dt / model.opt.timestep)
     simulated_seconds = 0.0
+    rng = np.random.default_rng(1234)
+    next_push = push_interval if push_interval > 0.0 else math.inf
+    push_until = -1.0
+    pushed_controller: RobotController | None = None
+    push_vector = np.zeros(3, dtype=np.float64)
 
     viewer = None
     if not headless:
@@ -252,10 +373,36 @@ def run_arena(
     try:
         while viewer is None or viewer.is_running():
             loop_started = time.perf_counter()
-            observations = np.stack([controller.observation(data) for controller in controllers])
+            if auto_recover:
+                for controller in controllers:
+                    controller.update_recovery_mode(
+                        data, references, set(trajectories)
+                    )
+            observations = np.stack(
+                [controller.observation(data) for controller in controllers]
+            )
             actions, _ = policy.predict(observations, deterministic=True)
             for controller, action in zip(controllers, actions):
-                controller.apply_action(model, data, action)
+                recovery = auto_recover and controller.mode == "getup"
+                if recovery:
+                    action = controller.recovery_action(
+                        trajectories, steps_per_keyframe
+                    )
+                controller.apply_action(model, data, action, recovery=recovery)
+
+            data.xfrc_applied[:] = 0.0
+            if simulated_seconds >= next_push:
+                pushed_controller = controllers[int(rng.integers(robot_count))]
+                angle = float(rng.uniform(0.0, 2.0 * math.pi))
+                push_vector[:] = (
+                    push_force * math.cos(angle),
+                    push_force * math.sin(angle),
+                    0.0,
+                )
+                push_until = simulated_seconds + 0.25
+                next_push += push_interval
+            if pushed_controller is not None and simulated_seconds < push_until:
+                data.xfrc_applied[pushed_controller.base_id, :3] = push_vector
             mujoco.mj_step(model, data, frame_skip)
             simulated_seconds += control_dt
             if viewer is not None:
@@ -274,6 +421,7 @@ def run_arena(
     ) - initial_forward
     print(
         f"robots={robot_count} speed={speed:.2f}x "
+        f"push_interval={push_interval:.1f}s auto_recover={auto_recover} "
         f"mean_forward_position={np.mean(distances):.3f} m"
     )
 
@@ -287,17 +435,36 @@ def main() -> None:
     parser.add_argument("--speed", type=float)
     parser.add_argument("--headless", action="store_true")
     parser.add_argument("--seconds", type=float, default=0.0)
+    parser.add_argument(
+        "--trajectories", type=Path, default=Path("runs/getup_trajectories.json")
+    )
+    parser.add_argument("--push-interval", type=float, default=0.0)
+    parser.add_argument("--push-force", type=float, default=35.0)
+    parser.add_argument("--auto-recover", action="store_true")
     args = parser.parse_args()
 
     if args.robots is None and not args.headless:
         settings = choose_settings()
         if settings is None:
             return
-        robot_count, speed = settings
+        robot_count, speed, push_interval, push_force, auto_recover = settings
     else:
         robot_count = args.robots or 1
         speed = args.speed or 1.0
-    run_arena(args.checkpoint, robot_count, speed, args.headless, args.seconds)
+        push_interval = max(0.0, args.push_interval)
+        push_force = max(0.0, args.push_force)
+        auto_recover = args.auto_recover
+    run_arena(
+        args.checkpoint,
+        robot_count,
+        speed,
+        args.headless,
+        args.seconds,
+        args.trajectories,
+        push_interval,
+        push_force,
+        auto_recover,
+    )
 
 
 if __name__ == "__main__":
