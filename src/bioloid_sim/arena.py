@@ -222,11 +222,11 @@ class RobotController:
         return action
 
 
-def choose_settings() -> tuple[int, float, float, float, bool] | None:
+def choose_settings() -> tuple[int, float, float, float, bool, float] | None:
     import tkinter as tk
     from tkinter import ttk
 
-    result: list[tuple[int, float, float, float, bool]] = []
+    result: list[tuple[int, float, float, float, bool, float]] = []
     root = tk.Tk()
     root.title("Bioloid GP Arena")
     root.resizable(False, False)
@@ -238,6 +238,7 @@ def choose_settings() -> tuple[int, float, float, float, bool] | None:
     push_interval = tk.DoubleVar(value=6.0)
     push_force = tk.DoubleVar(value=35.0)
     auto_recover = tk.BooleanVar(value=True)
+    lifetime = tk.DoubleVar(value=7.0)
     ttk.Label(frame, text="Количество роботов").grid(row=0, column=0, sticky="w")
     ttk.Spinbox(frame, from_=1, to=12, textvariable=robots, width=8).grid(
         row=0, column=1, padx=(12, 0)
@@ -278,11 +279,15 @@ def choose_settings() -> tuple[int, float, float, float, bool] | None:
     ttk.Checkbutton(
         frame, text="Автоподъём после падения", variable=auto_recover
     ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(12, 12))
+    ttk.Label(frame, text="Время жизни, сек").grid(row=7, column=0, sticky="w")
+    ttk.Spinbox(
+        frame, from_=1.0, to=120.0, increment=1.0, textvariable=lifetime, width=8
+    ).grid(row=7, column=1, padx=(12, 0))
     ttk.Label(
         frame,
         text="Толчок действует 0.25 сек на случайного робота",
         foreground="#666666",
-    ).grid(row=7, column=0, columnspan=2, sticky="w", pady=(0, 14))
+    ).grid(row=8, column=0, columnspan=2, sticky="w", pady=(12, 14))
 
     def start() -> None:
         interval = max(0.5, push_interval.get()) if push_enabled.get() else 0.0
@@ -293,12 +298,13 @@ def choose_settings() -> tuple[int, float, float, float, bool] | None:
                 interval,
                 max(0.0, push_force.get()),
                 auto_recover.get(),
+                max(1.0, lifetime.get()),
             )
         )
         root.destroy()
 
     ttk.Button(frame, text="Запустить", command=start).grid(
-        row=8, column=0, columnspan=2
+        row=9, column=0, columnspan=2
     )
     root.mainloop()
     return result[0] if result else None
@@ -314,6 +320,7 @@ def run_arena(
     push_interval: float = 0.0,
     push_force: float = 35.0,
     auto_recover: bool = False,
+    lifetime: float = 0.0,
 ) -> None:
     model = mujoco.MjModel.from_xml_string(build_arena_xml(robot_count))
     data = mujoco.MjData(model)
@@ -332,6 +339,7 @@ def run_arena(
     data.qvel[:] = 0.0
     data.ctrl[:] = 0.0
     mujoco.mj_forward(model, data)
+    initial_qpos = data.qpos.copy()
     initial_forward = np.asarray(
         [-data.qpos[controller.root_qpos + 1] for controller in controllers]
     )
@@ -359,6 +367,7 @@ def run_arena(
     push_until = -1.0
     pushed_controller: RobotController | None = None
     push_vector = np.zeros(3, dtype=np.float64)
+    next_reset = lifetime if lifetime > 0.0 else math.inf
 
     viewer = None
     if not headless:
@@ -405,6 +414,21 @@ def run_arena(
                 data.xfrc_applied[pushed_controller.base_id, :3] = push_vector
             mujoco.mj_step(model, data, frame_skip)
             simulated_seconds += control_dt
+            if simulated_seconds >= next_reset:
+                data.qpos[:] = initial_qpos
+                data.qvel[:] = 0.0
+                data.ctrl[:] = 0.0
+                data.xfrc_applied[:] = 0.0
+                for controller in controllers:
+                    controller.filtered_action.fill(0.0)
+                    controller.mode = "walk"
+                    controller.fallen_steps = 0
+                    controller.ready_steps = 0
+                    controller.trajectory_step = 0
+                pushed_controller = None
+                push_until = -1.0
+                mujoco.mj_forward(model, data)
+                next_reset += lifetime
             if viewer is not None:
                 viewer.sync()
                 remaining = control_dt / speed - (time.perf_counter() - loop_started)
@@ -421,7 +445,8 @@ def run_arena(
     ) - initial_forward
     print(
         f"robots={robot_count} speed={speed:.2f}x "
-        f"push_interval={push_interval:.1f}s auto_recover={auto_recover} "
+        f"lifetime={lifetime:.1f}s push_interval={push_interval:.1f}s "
+        f"auto_recover={auto_recover} "
         f"mean_forward_position={np.mean(distances):.3f} m"
     )
 
@@ -441,19 +466,23 @@ def main() -> None:
     parser.add_argument("--push-interval", type=float, default=0.0)
     parser.add_argument("--push-force", type=float, default=35.0)
     parser.add_argument("--auto-recover", action="store_true")
+    parser.add_argument(
+        "--lifetime", type=float, default=7.0, help="seconds before arena reset"
+    )
     args = parser.parse_args()
 
     if args.robots is None and not args.headless:
         settings = choose_settings()
         if settings is None:
             return
-        robot_count, speed, push_interval, push_force, auto_recover = settings
+        robot_count, speed, push_interval, push_force, auto_recover, lifetime = settings
     else:
         robot_count = args.robots or 1
         speed = args.speed or 1.0
         push_interval = max(0.0, args.push_interval)
         push_force = max(0.0, args.push_force)
         auto_recover = args.auto_recover
+        lifetime = max(0.0, args.lifetime)
     run_arena(
         args.checkpoint,
         robot_count,
@@ -464,6 +493,7 @@ def main() -> None:
         push_interval,
         push_force,
         auto_recover,
+        lifetime,
     )
 
 

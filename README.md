@@ -54,14 +54,14 @@ Open the graphical launcher:
 ```
 
 Choose from 1 to 12 robots, set the visible simulation speed from `0.25×` to
-`8×`, configure random physical pushes and automatic fall recovery, and press
+`8×`, configure a 7-second robot lifetime, random physical pushes and automatic fall recovery, and press
 **Запустить**. The launcher places all robots in one MuJoCo window and controls
 them with the included walking policy.
 
 The same settings can be passed directly without the launcher:
 
 ```powershell
-.\.venv\Scripts\bioloid-arena.exe --robots 6 --speed 4 --push-interval 5 --push-force 35 --auto-recover
+.\.venv\Scripts\bioloid-arena.exe --robots 6 --speed 4 --lifetime 7 --push-interval 5 --push-force 35 --auto-recover
 ```
 
 On Windows, `launch_arena.cmd` opens the same settings window and can be used
