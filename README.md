@@ -45,6 +45,24 @@ From PowerShell in this directory:
 .\.venv\Scripts\python.exe -m pip install -e '.[train,test]'
 ```
 
+## Multi-robot arena
+
+Open the graphical launcher:
+
+```powershell
+.\.venv\Scripts\bioloid-arena.exe
+```
+
+Choose from 1 to 12 robots, set the visible simulation speed from `0.25×` to
+`8×`, and press **Запустить**. The launcher places all robots in one MuJoCo
+window and controls them with the included walking policy.
+
+The same settings can be passed directly without the launcher:
+
+```powershell
+.\.venv\Scripts\bioloid-arena.exe --robots 6 --speed 4
+```
+
 Open the model with its neutral pose controller:
 
 ```powershell

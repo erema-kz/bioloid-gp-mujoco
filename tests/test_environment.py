@@ -3,6 +3,7 @@ import mujoco
 from importlib.resources import files
 
 from bioloid_sim import BioloidGPEnv, ExactBioloidGPEnv
+from bioloid_sim.arena import build_arena_xml
 
 
 def test_model_dimensions_and_finite_rollout():
@@ -144,3 +145,19 @@ def test_recovery_mode_starts_fallen_without_terminating_immediately():
         assert not truncated
     assert info["fallen"]
     env.close()
+
+
+def test_multi_robot_arena_builds_independent_robots():
+    model = mujoco.MjModel.from_xml_string(build_arena_xml(3))
+    data = mujoco.MjData(model)
+    mujoco.mj_forward(model, data)
+
+    assert model.nu == 48
+    assert model.njnt == 51
+    for index in range(3):
+        assert (
+            mujoco.mj_name2id(
+                model, mujoco.mjtObj.mjOBJ_BODY, f"robot{index}_base"
+            )
+            >= 0
+        )
