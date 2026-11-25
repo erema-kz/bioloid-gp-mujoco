@@ -119,6 +119,12 @@ Visible training intentionally uses one environment so that one MuJoCo window
 shows the robot being trained. Use `--no-recover` only when fall recovery is
 not part of the task.
 
+Recovery training penalizes every control step spent fallen, applies an
+additional `-50` penalty when the seven-second life ends without recovery, and
+awards up to `+50` extra for standing up quickly (in addition to the `+25`
+recovery reward). Once upright, forward progress continues earning the walking
+reward.
+
 Evaluate the exact balance policy:
 
 ```powershell

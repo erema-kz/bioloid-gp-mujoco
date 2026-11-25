@@ -66,6 +66,7 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
         self._previous_upright = 0.0
         self._was_recovered = True
         self._recovery_count = 0
+        self._fallen_steps = 0
 
         observation_size = 4 + 6 + 16 + 16 + 1
         self.observation_space = spaces.Box(
@@ -139,6 +140,7 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
             self._previous_height > 0.255 and self._previous_upright > 0.70
         )
         self._recovery_count = 0
+        self._fallen_steps = 0
         return self._observation(), {
             "command_speed": self.command_speed,
             "start_fallen": not self._was_recovered,
@@ -177,8 +179,15 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
         fallen = not recovered
         just_recovered = bool(recovered and not self._was_recovered)
         just_fell = bool(fallen and self._was_recovered)
+        recovery_seconds = self._fallen_steps * self.control_dt
+        fast_recovery_bonus = 0.0
         if just_recovered:
             self._recovery_count += 1
+            fast_recovery_bonus = 50.0 * max(
+                0.0, 1.0 - recovery_seconds / (self.max_steps * self.control_dt)
+            )
+        if fallen:
+            self._fallen_steps += 1
 
         if self.task == "walk":
             tracking = np.exp(-((forward_velocity - self.command_speed) / 0.08) ** 2)
@@ -208,6 +217,10 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
                     + 60.0 * (height - self._previous_height)
                     + 8.0 * (upright - self._previous_upright)
                 )
+                if fallen:
+                    # A motionless fallen pose must be worse than actively
+                    # gaining height and becoming upright.
+                    reward -= 3.0
         else:
             reward = (
                 1.0
@@ -232,7 +245,7 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
         if success:
             reward += 100.0
         elif just_recovered:
-            reward += 25.0
+            reward += 25.0 + fast_recovery_bonus
         elif just_fell and self.allow_recovery:
             reward -= 10.0
         elif terminated:
@@ -241,6 +254,11 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
         self._previous_upright = upright
         self._was_recovered = recovered
         truncated = self._step >= self.max_steps
+        recovery_failed = bool(self.allow_recovery and truncated and fallen)
+        if recovery_failed:
+            reward -= 50.0
+        if just_recovered:
+            self._fallen_steps = 0
         info = {
             "height": height,
             "upright": upright,
@@ -253,6 +271,9 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
             "fallen": fallen,
             "recovered": recovered,
             "recovery_count": self._recovery_count,
+            "fallen_seconds": self._fallen_steps * self.control_dt,
+            "fast_recovery_bonus": fast_recovery_bonus,
+            "recovery_failed": recovery_failed,
         }
         if self.render_mode == "human":
             self.render()

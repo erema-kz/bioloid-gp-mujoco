@@ -1,5 +1,6 @@
 import numpy as np
 import mujoco
+import pytest
 from importlib.resources import files
 
 from bioloid_sim import BioloidGPEnv, ExactBioloidGPEnv
@@ -144,6 +145,29 @@ def test_recovery_mode_starts_fallen_without_terminating_immediately():
         assert not terminated
         assert not truncated
     assert info["fallen"]
+
+
+def test_failed_recovery_is_penalized_at_end_of_life():
+    env = ExactBioloidGPEnv(
+        episode_seconds=0.04,
+        task="walk",
+        allow_recovery=True,
+        fallen_reset_probability=0.0,
+    )
+    observation, _ = env.reset(seed=45, options={"start_fallen": True})
+    assert observation.shape == env.observation_space.shape
+
+    _, reward, terminated, truncated, info = env.step(np.zeros(16))
+    assert not terminated
+    assert not truncated
+    _, reward, terminated, truncated, info = env.step(np.zeros(16))
+
+    assert not terminated
+    assert truncated
+    assert info["recovery_failed"]
+    assert info["fallen_seconds"] == pytest.approx(0.04)
+    assert reward < -40.0
+    env.close()
     env.close()
 
 
