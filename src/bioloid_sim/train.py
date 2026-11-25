@@ -22,8 +22,22 @@ def main() -> None:
     parser.add_argument("--model", choices=("approx", "exact"), default="approx")
     parser.add_argument("--task", choices=("balance", "walk"), default="balance")
     parser.add_argument("--goal-distance", type=float, default=0.5)
-    parser.add_argument("--recover", action="store_true", help="learn to get up after falling")
+    parser.add_argument(
+        "--recover",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="keep the episode running after a fall and learn to get up",
+    )
     parser.add_argument("--fallen-reset-prob", type=float, default=0.35)
+    parser.add_argument(
+        "--episode-seconds",
+        type=float,
+        default=7.0,
+        help="duration of one training life (default: 7 seconds)",
+    )
+    parser.add_argument(
+        "--render", action="store_true", help="show the MuJoCo window during training"
+    )
     parser.add_argument("--checkpoint-every", type=int, default=250_000)
     parser.add_argument("--resume", type=Path, help="continue from an existing PPO checkpoint")
     args = parser.parse_args()
@@ -34,15 +48,23 @@ def main() -> None:
         )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     environment = ExactBioloidGPEnv if args.model == "exact" else BioloidGPEnv
+    if args.render and args.envs != 1:
+        print("Visible training uses one environment; changing --envs to 1")
+        args.envs = 1
     env_kwargs = (
         {
+            "render_mode": "human" if args.render else None,
+            "episode_seconds": args.episode_seconds,
             "task": args.task,
             "goal_distance": args.goal_distance,
             "allow_recovery": args.recover,
             "fallen_reset_probability": args.fallen_reset_prob if args.recover else 0.0,
         }
         if args.model == "exact"
-        else None
+        else {
+            "render_mode": "human" if args.render else None,
+            "episode_seconds": args.episode_seconds,
+        }
     )
     env = make_vec_env(
         environment, n_envs=args.envs, seed=args.seed, env_kwargs=env_kwargs

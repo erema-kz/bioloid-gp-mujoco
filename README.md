@@ -104,6 +104,21 @@ Train balance on the exact STEP model:
   --steps 100000 --envs 8 --output runs\bioloid_exact_balance
 ```
 
+Run visible walking and recovery training. One training life lasts 7 seconds
+(five seconds shorter than the original 12-second default), collisions stay
+enabled, and fallen starts are included automatically:
+
+```powershell
+.\.venv\Scripts\bioloid-train.exe --model exact --task walk --render `
+  --steps 3000000 --episode-seconds 7 --fallen-reset-prob 0.35 `
+  --resume runs\bioloid_exact_walk_0p5m_v2.zip `
+  --output runs\bioloid_visible_recovery
+```
+
+Visible training intentionally uses one environment so that one MuJoCo window
+shows the robot being trained. Use `--no-recover` only when fall recovery is
+not part of the task.
+
 Evaluate the exact balance policy:
 
 ```powershell

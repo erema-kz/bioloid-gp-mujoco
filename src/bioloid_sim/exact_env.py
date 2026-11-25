@@ -20,7 +20,7 @@ class ExactBioloidGPEnv(gym.Env[np.ndarray, np.ndarray]):
     def __init__(
         self,
         render_mode: str | None = None,
-        episode_seconds: float = 12.0,
+        episode_seconds: float = 7.0,
         task: str = "balance",
         goal_distance: float = 0.5,
         allow_recovery: bool = False,
