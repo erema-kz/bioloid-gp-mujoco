@@ -51,14 +51,14 @@ def main() -> None:
     ).pack(anchor="w")
     tk.Label(
         panel,
-        text="Центр управления роботом",
+        text="Robot Control Center",
         font=("Segoe UI Semibold", 22),
         fg="#F3F7FA",
         bg="#101923",
     ).pack(anchor="w", pady=(4, 8))
     tk.Label(
         panel,
-        text="Выбери режим запуска",
+        text="Choose a launch mode",
         font=("Segoe UI", 10),
         fg="#A9B8C6",
         bg="#101923",
@@ -66,7 +66,7 @@ def main() -> None:
 
     arena_button = tk.Button(
         panel,
-        text="АРЕНА  •  несколько роботов",
+        text="ARENA  •  multiple robots",
         command=lambda: launch_arena(root),
         font=("Segoe UI Semibold", 12),
         fg="white",
@@ -81,7 +81,7 @@ def main() -> None:
 
     training_button = tk.Button(
         panel,
-        text="ОБУЧЕНИЕ ИИ  •  подъём и ходьба",
+        text="AI TRAINING  •  get up and walk",
         command=lambda: launch_training(root),
         font=("Segoe UI Semibold", 12),
         fg="#071B1B",
@@ -96,8 +96,8 @@ def main() -> None:
 
     tk.Label(
         panel,
-        text="Обучение: жизнь 7 сек • 35% стартов лёжа • 3 млн шагов\n"
-        "Не запускай две тренировки одновременно.",
+        text="Training: 7-second life • 35% fallen starts • 3M steps\n"
+        "Do not run two training sessions at the same time.",
         font=("Segoe UI", 9),
         justify="left",
         fg="#D6A84D",

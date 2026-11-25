@@ -239,11 +239,11 @@ def choose_settings() -> tuple[int, float, float, float, bool, float] | None:
     push_force = tk.DoubleVar(value=35.0)
     auto_recover = tk.BooleanVar(value=True)
     lifetime = tk.DoubleVar(value=7.0)
-    ttk.Label(frame, text="Количество роботов").grid(row=0, column=0, sticky="w")
+    ttk.Label(frame, text="Number of robots").grid(row=0, column=0, sticky="w")
     ttk.Spinbox(frame, from_=1, to=12, textvariable=robots, width=8).grid(
         row=0, column=1, padx=(12, 0)
     )
-    ttk.Label(frame, text="Скорость симуляции").grid(
+    ttk.Label(frame, text="Simulation speed").grid(
         row=1, column=0, sticky="w", pady=(12, 0)
     )
     speed_label = ttk.Label(frame, text="1.0×", width=8)
@@ -262,30 +262,30 @@ def choose_settings() -> tuple[int, float, float, float, bool, float] | None:
     ).grid(row=2, column=0, columnspan=2, pady=(6, 16))
 
     ttk.Checkbutton(
-        frame, text="Случайные физические толчки", variable=push_enabled
+        frame, text="Random physical pushes", variable=push_enabled
     ).grid(row=3, column=0, columnspan=2, sticky="w")
-    ttk.Label(frame, text="Интервал толчков, сек").grid(
+    ttk.Label(frame, text="Push interval, seconds").grid(
         row=4, column=0, sticky="w", pady=(10, 0)
     )
     ttk.Spinbox(
         frame, from_=1.0, to=60.0, increment=0.5, textvariable=push_interval, width=8
     ).grid(row=4, column=1, padx=(12, 0), pady=(10, 0))
-    ttk.Label(frame, text="Сила толчка, Н").grid(
+    ttk.Label(frame, text="Push force, N").grid(
         row=5, column=0, sticky="w", pady=(10, 0)
     )
     ttk.Spinbox(
         frame, from_=5.0, to=100.0, increment=5.0, textvariable=push_force, width=8
     ).grid(row=5, column=1, padx=(12, 0), pady=(10, 0))
     ttk.Checkbutton(
-        frame, text="Автоподъём после падения", variable=auto_recover
+        frame, text="Automatic get-up after a fall", variable=auto_recover
     ).grid(row=6, column=0, columnspan=2, sticky="w", pady=(12, 12))
-    ttk.Label(frame, text="Время жизни, сек").grid(row=7, column=0, sticky="w")
+    ttk.Label(frame, text="Lifetime, seconds").grid(row=7, column=0, sticky="w")
     ttk.Spinbox(
         frame, from_=1.0, to=120.0, increment=1.0, textvariable=lifetime, width=8
     ).grid(row=7, column=1, padx=(12, 0))
     ttk.Label(
         frame,
-        text="Толчок действует 0.25 сек на случайного робота",
+        text="Each push acts on a random robot for 0.25 seconds",
         foreground="#666666",
     ).grid(row=8, column=0, columnspan=2, sticky="w", pady=(12, 14))
 
@@ -303,7 +303,7 @@ def choose_settings() -> tuple[int, float, float, float, bool, float] | None:
         )
         root.destroy()
 
-    ttk.Button(frame, text="Запустить", command=start).grid(
+    ttk.Button(frame, text="Launch", command=start).grid(
         row=9, column=0, columnspan=2
     )
     root.mainloop()
