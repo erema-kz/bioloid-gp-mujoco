@@ -67,6 +67,12 @@ The same settings can be passed directly without the launcher:
 On Windows, `launch_arena.cmd` opens the same settings window and can be used
 as the target of a desktop shortcut.
 
+`launch_visible_training.cmd` starts visible recovery training with seven-second
+lives, 35% fallen starts, and three million additional steps. It resumes from
+`runs/bioloid_visible_recovery.zip` when that completed model exists; otherwise
+it starts from the included walking policy. Do not start two training copies at
+the same time.
+
 Open the model with its neutral pose controller:
 
 ```powershell
