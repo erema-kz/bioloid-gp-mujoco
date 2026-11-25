@@ -8,4 +8,4 @@ if not exist ".venv\Scripts\pythonw.exe" (
   exit /b 1
 )
 
-start "Bioloid GP Arena" ".venv\Scripts\pythonw.exe" -m bioloid_sim.arena
+start "Bioloid GP" ".venv\Scripts\pythonw.exe" -m bioloid_sim.launcher

@@ -64,8 +64,9 @@ The same settings can be passed directly without the launcher:
 .\.venv\Scripts\bioloid-arena.exe --robots 6 --speed 4 --lifetime 7 --push-interval 5 --push-force 35 --auto-recover
 ```
 
-On Windows, `launch_arena.cmd` opens the same settings window and can be used
-as the target of a desktop shortcut.
+On Windows, `launch_arena.cmd` opens one control center with buttons for the
+multi-robot arena and visible AI training. It is used by the single desktop
+shortcut named `Bioloid GP`.
 
 `launch_visible_training.cmd` starts visible recovery training with seven-second
 lives, 35% fallen starts, and three million additional steps. It resumes from
